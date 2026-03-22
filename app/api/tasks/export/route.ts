@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbAdmin } from '@/lib/firebase-admin';
+import { getDbAdmin } from '@/lib/firebase-admin';
 
-const AUTH_TOKEN = 'TyTNJXAeponLTm';
+// Never statically render — always run at request time so env vars are available
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-    const authHeader = request.headers.get('auth');
-
-    // if (authHeader !== AUTH_TOKEN) {
-    //     return new NextResponse(null, { status: 404 });
-    // }
-
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // todo, doing, or done
 
@@ -18,7 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const snapshot = await dbAdmin.collection('tasks')
+        const db = getDbAdmin();
+        const snapshot = await db.collection('tasks')
             .where('kanban_column', '==', status)
             .get();
 
